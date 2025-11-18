@@ -7,9 +7,15 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
-  MapPinIcon, SearchIcon, PhoneIcon, ClockIcon,
-  StarIcon, NavigationIcon, Loader2Icon
+  MapPinIcon,
+  SearchIcon,
+  PhoneIcon,
+  ClockIcon,
+  StarIcon,
+  NavigationIcon,
+  Loader2Icon,
 } from "lucide-react"
+import { PageShell } from "@/components/page-shell"
 
 export default function NearbyPage() {
   const [activeTab, setActiveTab] = useState("pharmacies")
@@ -168,199 +174,203 @@ export default function NearbyPage() {
     .sort((a, b) => filterType === "distance" ? a.distance - b.distance : b.rating - a.rating)
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Nearby Healthcare Services</h1>
+    <PageShell>
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <p className="text-sm uppercase tracking-[0.4em] text-emerald-200">Local network</p>
+          <h1 className="text-4xl font-semibold text-white">Nearby Healthcare Services</h1>
+          <p className="text-white/70">
+            Compare pharmacies and on-call doctors around you—filter by distance or rating and launch directions instantly.
+          </p>
+        </div>
 
-      {isLoading ? (
-        <Card className="flex items-center justify-center p-12">
-          <div className="text-center">
-            <Loader2Icon className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-            <p className="text-lg font-medium">Locating nearby services...</p>
-            <p className="text-muted-foreground mt-2">Please wait while we find healthcare services near you</p>
-          </div>
-        </Card>
-      ) : (
-        <>
-          {/* Search and Filter */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="relative flex-1">
-              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by name or location..."
-                className="pl-9"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+        {isLoading ? (
+          <Card className="flex items-center justify-center p-12">
+            <div className="text-center">
+              <Loader2Icon className="mx-auto mb-4 h-12 w-12 animate-spin text-emerald-300" />
+              <p className="text-lg font-medium text-white">Locating nearby services...</p>
+              <p className="mt-2 text-white/60">Please wait while we find healthcare services near you</p>
             </div>
-            <div className="w-full sm:w-48">
-              <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="distance">Distance</SelectItem>
-                  <SelectItem value="rating">Rating</SelectItem>
-                </SelectContent>
-              </Select>
+          </Card>
+        ) : (
+          <>
+            <div className="flex flex-col gap-4 sm:flex-row">
+              <div className="relative flex-1">
+                <SearchIcon className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
+                <Input
+                  placeholder="Search by name or location..."
+                  className="pl-11"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <div className="w-full sm:w-48">
+                <Select value={filterType} onValueChange={setFilterType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="distance">Distance</SelectItem>
+                    <SelectItem value="rating">Rating</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </div>
 
-          {/* Tabs */}
-          <Tabs defaultValue="pharmacies" onValueChange={setActiveTab}>
-            <TabsList className="mb-6">
-              <TabsTrigger value="pharmacies">Pharmacies</TabsTrigger>
-              <TabsTrigger value="doctors">Doctors</TabsTrigger>
-            </TabsList>
+            <Tabs defaultValue="pharmacies" onValueChange={setActiveTab}>
+              <TabsList className="mb-6 bg-white/5 text-white/70">
+                <TabsTrigger value="pharmacies" className="data-[state=active]:bg-white data-[state=active]:text-slate-900">
+                  Pharmacies
+                </TabsTrigger>
+                <TabsTrigger value="doctors" className="data-[state=active]:bg-white data-[state=active]:text-slate-900">
+                  Doctors
+                </TabsTrigger>
+              </TabsList>
 
-            {/* Pharmacies */}
-            <TabsContent value="pharmacies">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {filteredPharmacies.length > 0 ? (
-                  filteredPharmacies.map((pharmacy) => (
-                    <Card key={pharmacy.id}>
-                      <CardHeader className="pb-2">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <CardTitle>{pharmacy.name}</CardTitle>
-                            <CardDescription className="flex items-center mt-1">
-                              <MapPinIcon className="h-3 w-3 mr-1" />
-                              {pharmacy.address}
-                            </CardDescription>
+              <TabsContent value="pharmacies">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  {filteredPharmacies.length > 0 ? (
+                    filteredPharmacies.map((pharmacy) => (
+                      <Card key={pharmacy.id}>
+                        <CardHeader className="pb-2">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <CardTitle className="text-white">{pharmacy.name}</CardTitle>
+                              <CardDescription className="mt-1 flex items-center text-white/70">
+                                <MapPinIcon className="mr-1 h-3 w-3" />
+                                {pharmacy.address}
+                              </CardDescription>
+                            </div>
+                            <div className="rounded-full bg-white/10 px-3 py-1 text-sm font-medium text-white">
+                              {pharmacy.distance.toFixed(1)} mi
+                            </div>
                           </div>
-                          <div className="bg-primary/10 text-primary rounded-full px-2 py-1 text-sm font-medium">
-                            {pharmacy.distance.toFixed(1)} mi
+                        </CardHeader>
+                        <CardContent className="pb-2 text-sm text-white/80">
+                          <div className="space-y-2">
+                            <div className="flex items-center">
+                              <PhoneIcon className="mr-2 h-4 w-4 text-white/50" />
+                              <span>{pharmacy.phone}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <ClockIcon className="mr-2 h-4 w-4 text-white/50" />
+                              <span>{pharmacy.hours}</span>
+                              <span
+                                className={`ml-2 rounded-full px-2 py-0.5 text-xs ${
+                                  pharmacy.isOpen ? "bg-emerald-400/20 text-emerald-100" : "bg-red-400/20 text-red-100"
+                                }`}
+                              >
+                                {pharmacy.isOpen ? "Open" : "Closed"}
+                              </span>
+                            </div>
+                            <div className="flex items-center">
+                              <StarIcon className="mr-2 h-4 w-4 text-amber-400" />
+                              <span>{pharmacy.rating}/5.0</span>
+                            </div>
                           </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="pb-2">
-                        <div className="space-y-2 text-sm">
-                          <div className="flex items-center">
-                            <PhoneIcon className="h-4 w-4 mr-2 text-muted-foreground" />
-                            <span>{pharmacy.phone}</span>
-                          </div>
-                          <div className="flex items-center">
-                            <ClockIcon className="h-4 w-4 mr-2 text-muted-foreground" />
-                            <span>{pharmacy.hours}</span>
-                            <span
-                              className={`ml-2 text-xs px-2 py-0.5 rounded-full ${pharmacy.isOpen ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
+                        </CardContent>
+                        <CardFooter>
+                          <div className="flex w-full gap-2">
+                            <Button variant="outline" className="flex-1">
+                              <PhoneIcon className="mr-2 h-4 w-4" />
+                              Call
+                            </Button>
+                            <Button
+                              className="flex-1"
+                              onClick={() => {
+                                const query = encodeURIComponent(`${pharmacy.name}, ${pharmacy.address}`)
+                                window.open(`https://www.google.com/maps/dir/?api=1&destination=${query}`, "_blank")
+                              }}
                             >
-                              {pharmacy.isOpen ? "Open" : "Closed"}
-                            </span>
+                              <NavigationIcon className="mr-2 h-4 w-4" />
+                              Directions
+                            </Button>
                           </div>
-                          <div className="flex items-center">
-                            <StarIcon className="h-4 w-4 mr-2 text-amber-500" />
-                            <span>{pharmacy.rating}/5.0</span>
-                          </div>
-                        </div>
-                      </CardContent>
-                      <CardFooter>
-                        <div className="flex gap-2 w-full">
-                          <Button variant="outline" className="flex-1">
-                            <PhoneIcon className="h-4 w-4 mr-2" />
-                            Call
-                          </Button>
-                          <Button
-                            className="flex-1"
-                            onClick={() => {
-                              const query = encodeURIComponent(`${pharmacy.name}, ${pharmacy.address}`)
-                              window.open(`https://www.google.com/maps/dir/?api=1&destination=${query}`, "_blank")
-                            }}
-                          >
-                            <NavigationIcon className="h-4 w-4 mr-2" />
-                            Directions
-                          </Button>
+                        </CardFooter>
+                      </Card>
+                    ))
+                  ) : (
+                    <div className="col-span-2 rounded-3xl border border-white/10 bg-white/5 p-12 text-center text-white/70">
+                      No pharmacies found. Try different keywords.
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
 
-                        </div>
-                      </CardFooter>
-                    </Card>
-                  ))
-                ) : (
-                  <div className="col-span-2 text-center py-12">
-                    <p className="text-muted-foreground mb-2">No pharmacies found</p>
-                    <p className="text-sm text-muted-foreground">
-                      Try searching with different terms or adjusting your filters
-                    </p>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-
-            {/* Doctors */}
-            <TabsContent value="doctors">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {filteredDoctors.length > 0 ? (
-                  filteredDoctors.map((doctor) => (
-                    <Card key={doctor.id}>
-                      <CardHeader className="pb-2">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <CardTitle>{doctor.name}</CardTitle>
-                            <CardDescription className="mt-1">Doctor</CardDescription>
+              <TabsContent value="doctors">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  {filteredDoctors.length > 0 ? (
+                    filteredDoctors.map((doctor) => (
+                      <Card key={doctor.id}>
+                        <CardHeader className="pb-2">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <CardTitle className="text-white">{doctor.name}</CardTitle>
+                              <CardDescription className="mt-1 text-white/70">Doctor</CardDescription>
+                            </div>
+                            <div className="rounded-full bg-white/10 px-3 py-1 text-sm font-medium text-white">
+                              {doctor.distance.toFixed(1)} mi
+                            </div>
                           </div>
-                          <div className="bg-primary/10 text-primary rounded-full px-2 py-1 text-sm font-medium">
-                            {doctor.distance.toFixed(1)} mi
+                        </CardHeader>
+                        <CardContent className="pb-2 text-sm text-white/80">
+                          <div className="space-y-2">
+                            <div className="flex items-center">
+                              <MapPinIcon className="mr-2 h-4 w-4 text-white/50" />
+                              <span>{doctor.address}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <PhoneIcon className="mr-2 h-4 w-4 text-white/50" />
+                              <span>{doctor.phone}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <ClockIcon className="mr-2 h-4 w-4 text-white/50" />
+                              <span>{doctor.hours}</span>
+                              <span
+                                className={`ml-2 rounded-full px-2 py-0.5 text-xs ${
+                                  doctor.isOpen ? "bg-emerald-400/20 text-emerald-100" : "bg-red-400/20 text-red-100"
+                                }`}
+                              >
+                                {doctor.isOpen ? "Open" : "Closed"}
+                              </span>
+                            </div>
+                            <div className="flex items-center">
+                              <StarIcon className="mr-2 h-4 w-4 text-amber-400" />
+                              <span>{doctor.rating}/5.0</span>
+                            </div>
                           </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="pb-2">
-                        <div className="space-y-2 text-sm">
-                          <div className="flex items-center">
-                            <MapPinIcon className="h-4 w-4 mr-2 text-muted-foreground" />
-                            <span>{doctor.address}</span>
-                          </div>
-                          <div className="flex items-center">
-                            <PhoneIcon className="h-4 w-4 mr-2 text-muted-foreground" />
-                            <span>{doctor.phone}</span>
-                          </div>
-                          <div className="flex items-center">
-                            <ClockIcon className="h-4 w-4 mr-2 text-muted-foreground" />
-                            <span>{doctor.hours}</span>
-                            <span
-                              className={`ml-2 text-xs px-2 py-0.5 rounded-full ${doctor.isOpen ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
+                        </CardContent>
+                        <CardFooter>
+                          <div className="flex w-full gap-2">
+                            <Button variant="outline" className="flex-1">
+                              <PhoneIcon className="mr-2 h-4 w-4" />
+                              Call
+                            </Button>
+                            <Button
+                              className="flex-1"
+                              onClick={() => {
+                                const query = encodeURIComponent(`${doctor.name}, ${doctor.address}`)
+                                window.open(`https://www.google.com/maps/dir/?api=1&destination=${query}`, "_blank")
+                              }}
                             >
-                              {doctor.isOpen ? "Open" : "Closed"}
-                            </span>
+                              <NavigationIcon className="mr-2 h-4 w-4" />
+                              Directions
+                            </Button>
                           </div>
-                          <div className="flex items-center">
-                            <StarIcon className="h-4 w-4 mr-2 text-amber-500" />
-                            <span>{doctor.rating}/5.0</span>
-                          </div>
-                        </div>
-                      </CardContent>
-                      <CardFooter>
-                        <div className="flex gap-2 w-full">
-                          <Button variant="outline" className="flex-1">
-                            <PhoneIcon className="h-4 w-4 mr-2" />
-                            Call
-                          </Button>
-                          <Button
-                            className="flex-1"
-                            onClick={() => {
-                              const query = encodeURIComponent(`${doctor.name}, ${doctor.address}`) // or doctor.name + address
-                              window.open(`https://www.google.com/maps/dir/?api=1&destination=${query}`, "_blank")
-                            }}
-                          >
-                            <NavigationIcon className="h-4 w-4 mr-2" />
-                            Directions
-                          </Button>
-
-                        </div>
-                      </CardFooter>
-                    </Card>
-                  ))
-                ) : (
-                  <div className="col-span-2 text-center py-12">
-                    <p className="text-muted-foreground mb-2">No doctors found</p>
-                    <p className="text-sm text-muted-foreground">
-                      Try searching with different terms or adjusting your filters
-                    </p>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-          </Tabs>
-        </>
-      )}
-    </div>
+                        </CardFooter>
+                      </Card>
+                    ))
+                  ) : (
+                    <div className="col-span-2 rounded-3xl border border-white/10 bg-white/5 p-12 text-center text-white/70">
+                      No doctors found. Try different keywords.
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
+          </>
+        )}
+      </div>
+    </PageShell>
   )
 }

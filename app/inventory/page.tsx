@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Loader2Icon } from "lucide-react"
 import { supabase } from "@/lib/supabase"
+import { PageShell } from "@/components/page-shell"
 
 export default function InventoryPage() {
   const [medicines, setMedicines] = useState<any[]>([])
@@ -57,23 +58,27 @@ export default function InventoryPage() {
   )
 
   return (
-    <div className="container py-10">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <h1 className="text-3xl font-bold">Medicine Inventory</h1>
-        <Input
-          placeholder="Search by medicine name..."
-          className="max-w-sm"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
+    <PageShell>
+      <div className="space-y-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-sm uppercase tracking-[0.4em] text-emerald-200">Live cabinet</p>
+            <h1 className="text-4xl font-semibold text-white">Medicine Inventory</h1>
+            <p className="text-white/70">Filter, audit expiry risks, and keep all prescriptions synced.</p>
+          </div>
+          <Input
+            placeholder="Search by medicine name..."
+            className="max-w-sm"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
+        <Card>
+          <CardContent className="p-0">
             <Table>
               <TableHeader>
-                <TableRow>
+                <TableRow className="text-white/70">
                   <TableHead>Name</TableHead>
                   <TableHead>Frequency</TableHead>
                   <TableHead>Expiry</TableHead>
@@ -84,52 +89,52 @@ export default function InventoryPage() {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8">
-                      <Loader2Icon className="w-6 h-6 animate-spin mx-auto mb-2" />
+                    <TableCell colSpan={5} className="py-10 text-center text-white/70">
+                      <Loader2Icon className="mx-auto mb-3 h-6 w-6 animate-spin text-emerald-300" />
                       Loading medicines...
                     </TableCell>
                   </TableRow>
                 ) : filtered.length > 0 ? (
                   filtered.map((med) => (
-                    <TableRow key={med.id}>
-                      <TableCell>{med.name}</TableCell>
-                      <TableCell>{med.frequency || "N/A"}</TableCell>
+                    <TableRow key={med.id} className="border-white/5">
+                      <TableCell className="font-semibold text-white">{med.name}</TableCell>
+                      <TableCell className="text-white/80">{med.frequency || "N/A"}</TableCell>
                       <TableCell>
                         <span
                           className={
                             isExpired(med.expiry_date)
-                              ? "text-red-600 font-medium"
+                              ? "text-red-300 font-medium"
                               : isExpiringSoon(med.expiry_date)
-                              ? "text-yellow-600 font-medium"
-                              : ""
+                              ? "text-amber-200 font-medium"
+                              : "text-white/80"
                           }
                         >
                           {med.expiry_date
                             ? new Date(`${med.expiry_date}T00:00:00`).toLocaleDateString("en-GB")
                             : "No expiry"}
                           {isExpired(med.expiry_date)
-                            ? " (Expired)"
+                            ? " · Expired"
                             : isExpiringSoon(med.expiry_date)
-                            ? " (Expiring Soon)"
+                            ? " · Expiring Soon"
                             : ""}
                         </span>
                       </TableCell>
-                      <TableCell>{med.quantity}</TableCell>
-                      <TableCell>{med.dosage}</TableCell>
+                      <TableCell className="text-white/80">{med.quantity}</TableCell>
+                      <TableCell className="text-white/80">{med.dosage}</TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-6">
+                    <TableCell colSpan={5} className="py-10 text-center text-white/60">
                       No medicines found.
                     </TableCell>
                   </TableRow>
                 )}
               </TableBody>
             </Table>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+      </div>
+    </PageShell>
   )
 }

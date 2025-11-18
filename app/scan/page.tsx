@@ -28,6 +28,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { format } from "date-fns"
+import { PageShell } from "@/components/page-shell"
 
 // Define a type for medicine form data
 type MedicineFormData = {
@@ -283,219 +284,228 @@ export default function ScanPage() {
   )
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Add Medicine</h1>
+    <PageShell>
+      <div className="space-y-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-2">
+            <p className="text-sm uppercase tracking-[0.4em] text-emerald-200">Intelligent capture</p>
+            <h1 className="text-4xl font-semibold text-white">Add Medicine</h1>
+            <p className="text-white/70">
+              Scan labels, upload prescriptions, or key in details—MediTrack keeps formats consistent and alerts ready.
+            </p>
+          </div>
+          <div className="rounded-3xl border border-white/10 bg-white/5 px-6 py-4 text-sm text-white/80 backdrop-blur">
+            <p className="font-semibold text-white">Live automation</p>
+            <p className="text-white/60">AI enriches detected medicines with dosages, expiry and refill nudges.</p>
+          </div>
+        </div>
 
-      <Tabs defaultValue="camera" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-6">
-          <TabsTrigger value="camera">
-            <CameraIcon className="h-4 w-4 mr-2" />
-            Camera
-          </TabsTrigger>
-          <TabsTrigger value="manual">
-            <PencilIcon className="h-4 w-4 mr-2" />
-            Manual Entry
-          </TabsTrigger>
-        </TabsList>
+        <Tabs defaultValue="camera" value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-6 bg-white/5 text-white/70">
+            <TabsTrigger value="camera" className="data-[state=active]:bg-white data-[state=active]:text-slate-900">
+              <CameraIcon className="mr-2 h-4 w-4" />
+              Camera
+            </TabsTrigger>
+            <TabsTrigger value="manual" className="data-[state=active]:bg-white data-[state=active]:text-slate-900">
+              <PencilIcon className="mr-2 h-4 w-4" />
+              Manual Entry
+            </TabsTrigger>
+          </TabsList>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <TabsContent value="camera" className="mt-0">
-            {!showConfirmation ? (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Upload Medicine Image</CardTitle>
-                  <CardDescription>Take a photo or upload an image of your medicine</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div
-                      className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:bg-secondary/50 transition-colors"
-                      onClick={handleCameraClick}
-                    >
-                      {image ? (
-                        <img src={image || "/placeholder.svg"} alt="Medicine" className="max-h-64 mx-auto rounded-md" />
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <TabsContent value="camera" className="mt-0 lg:col-span-2">
+              {!showConfirmation ? (
+                <Card className="h-full">
+                  <CardHeader>
+                    <CardTitle>Upload Medicine Image</CardTitle>
+                    <CardDescription>Take a photo or upload an image of your medicine</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div
+                        className="cursor-pointer rounded-2xl border-2 border-dashed border-white/20 p-4 text-center transition hover:border-white/50 hover:bg-white/5"
+                        onClick={handleCameraClick}
+                      >
+                        {image ? (
+                          <img src={image || "/placeholder.svg"} alt="Medicine" className="mx-auto max-h-64 rounded-2xl" />
+                        ) : (
+                          <div className="py-8 text-white/70">
+                            <CameraIcon className="mx-auto mb-4 h-12 w-12 text-white/50" />
+                            <p>Click to take a photo or upload an image</p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex items-center justify-center gap-3">
+                        <Input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          className="hidden"
+                          onChange={handleFileChange}
+                        />
+                        <Button variant="outline" onClick={handleCameraClick}>
+                          <CameraIcon className="mr-2 h-4 w-4" />
+                          Take Photo
+                        </Button>
+                        <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+                          <UploadIcon className="mr-2 h-4 w-4" />
+                          Upload Image
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button className="w-full" onClick={processImage} disabled={!image || isProcessing}>
+                      {isProcessing ? (
+                        <>
+                          <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                          Processing...
+                        </>
                       ) : (
-                        <div className="py-8">
-                          <CameraIcon className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
-                          <p>Click to take a photo or upload an image</p>
-                        </div>
+                        "Scan Medicine"
                       )}
-                    </div>
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ) : (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Confirm Medicine Details</CardTitle>
+                    <CardDescription>Review and complete the medicine information</CardDescription>
+                  </CardHeader>
+                  <CardContent>{renderMedicineForm()}</CardContent>
+                  <CardFooter className="flex flex-col space-y-2">
+                    <Button className="w-full" onClick={addToInventory}>
+                      Add to Inventory
+                    </Button>
+                    <Button variant="outline" className="w-full" onClick={() => setShowConfirmation(false)}>
+                      Back to Scan
+                    </Button>
+                  </CardFooter>
+                </Card>
+              )}
+            </TabsContent>
 
-                    <div className="flex items-center justify-center">
-                      <Input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        capture="environment"
-                        className="hidden"
-                        onChange={handleFileChange}
-                      />
-                      <Button variant="outline" className="mr-2" onClick={handleCameraClick}>
-                        <CameraIcon className="h-4 w-4 mr-2" />
-                        Take Photo
-                      </Button>
-                      <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
-                        <UploadIcon className="h-4 w-4 mr-2" />
-                        Upload Image
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button className="w-full" onClick={processImage} disabled={!image || isProcessing}>
-                    {isProcessing ? (
-                      <>
-                        <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      "Scan Medicine"
-                    )}
-                  </Button>
-                </CardFooter>
-              </Card>
-            ) : (
-              <Card>
+            <TabsContent value="manual" className="mt-0 lg:col-span-2">
+              <Card className="h-full">
                 <CardHeader>
-                  <CardTitle>Confirm Medicine Details</CardTitle>
-                  <CardDescription>Review and complete the medicine information</CardDescription>
+                  <CardTitle>Manual Medicine Entry</CardTitle>
+                  <CardDescription>Enter medicine details manually</CardDescription>
                 </CardHeader>
                 <CardContent>{renderMedicineForm()}</CardContent>
-                <CardFooter className="flex flex-col space-y-2">
+                <CardFooter>
                   <Button className="w-full" onClick={addToInventory}>
                     Add to Inventory
                   </Button>
-                  <Button variant="outline" className="w-full" onClick={() => setShowConfirmation(false)}>
-                    Back to Scan
-                  </Button>
                 </CardFooter>
               </Card>
-            )}
-          </TabsContent>
+            </TabsContent>
 
-          <TabsContent value="manual" className="mt-0">
-            <Card>
-              <CardHeader>
-                <CardTitle>Manual Medicine Entry</CardTitle>
-                <CardDescription>Enter medicine details manually</CardDescription>
-              </CardHeader>
-              <CardContent>{renderMedicineForm()}</CardContent>
-              <CardFooter>
-                <Button className="w-full" onClick={addToInventory}>
-                  Add to Inventory
-                </Button>
-              </CardFooter>
-            </Card>
-          </TabsContent>
-
-          {!showConfirmation && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Medicine Information</CardTitle>
-                <CardDescription>Detected medicine details and information</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isProcessing ? (
-                  <div className="flex flex-col items-center justify-center py-12">
-                    <Loader2Icon className="h-12 w-12 animate-spin text-primary mb-4" />
-                    <p className="text-muted-foreground">Processing image...</p>
-                  </div>
-                ) : error ? (
-                  <Alert variant="destructive">
-                    <AlertTriangleIcon className="h-4 w-4" />
-                    <AlertTitle>Error</AlertTitle>
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                ) : medicineInfo ? (
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="text-lg font-semibold">{medicineInfo.name}</h3>
-                      <p className="text-sm text-muted-foreground">{medicineInfo.activeIngredient}</p>
+            {!showConfirmation && (
+              <Card className="h-full">
+                <CardHeader>
+                  <CardTitle>Medicine Information</CardTitle>
+                  <CardDescription>Detected medicine details and information</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isProcessing ? (
+                    <div className="flex flex-col items-center justify-center py-12">
+                      <Loader2Icon className="mb-4 h-12 w-12 animate-spin text-primary" />
+                      <p className="text-muted-foreground">Processing image...</p>
                     </div>
-
-                    <Accordion type="single" collapsible className="w-full">
-                      <AccordionItem value="dosage">
-                        <AccordionTrigger>Dosage</AccordionTrigger>
-                        <AccordionContent>{medicineInfo.dosage}</AccordionContent>
-                      </AccordionItem>
-
-                      <AccordionItem value="usages">
-                        <AccordionTrigger>Uses</AccordionTrigger>
-                        <AccordionContent>
-                          <ul className="list-disc pl-5 space-y-1">
-                            {medicineInfo.usages.map((usage, index) => (
-                              <li key={index}>{usage}</li>
-                            ))}
-                          </ul>
-                        </AccordionContent>
-                      </AccordionItem>
-
-                      <AccordionItem value="sideEffects">
-                        <AccordionTrigger>Side Effects</AccordionTrigger>
-                        <AccordionContent>
-                          <ul className="list-disc pl-5 space-y-1">
-                            {medicineInfo.sideEffects.map((effect, index) => (
-                              <li key={index}>{effect}</li>
-                            ))}
-                          </ul>
-                        </AccordionContent>
-                      </AccordionItem>
-
-                      <AccordionItem value="interactions">
-                        <AccordionTrigger>Interactions</AccordionTrigger>
-                        <AccordionContent>
-                          <ul className="list-disc pl-5 space-y-1">
-                            {medicineInfo.interactions.map((interaction, index) => (
-                              <li key={index}>{interaction}</li>
-                            ))}
-                          </ul>
-                        </AccordionContent>
-                      </AccordionItem>
-
-                      <AccordionItem value="precautions">
-                        <AccordionTrigger>Precautions</AccordionTrigger>
-                        <AccordionContent>
-                          <ul className="list-disc pl-5 space-y-1">
-                            {medicineInfo.precautions.map((precaution, index) => (
-                              <li key={index}>{precaution}</li>
-                            ))}
-                          </ul>
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-
-                    <Alert>
-                      <InfoIcon className="h-4 w-4" />
-                      <AlertTitle>Disclaimer</AlertTitle>
-                      <AlertDescription>
-                        This information is provided for educational purposes only and should not replace professional
-                        medical advice.
-                      </AlertDescription>
+                  ) : error ? (
+                    <Alert variant="destructive">
+                      <AlertTriangleIcon className="h-4 w-4" />
+                      <AlertTitle>Error</AlertTitle>
+                      <AlertDescription>{error}</AlertDescription>
                     </Alert>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <PillIcon className="h-12 w-12 text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground mb-2">No medicine scanned yet</p>
-                    <p className="text-sm text-muted-foreground">
-                      Take a photo of your medicine packaging to get detailed information
-                    </p>
-                  </div>
+                  ) : medicineInfo ? (
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="text-lg font-semibold">{medicineInfo.name}</h3>
+                        <p className="text-sm text-muted-foreground">{medicineInfo.activeIngredient}</p>
+                      </div>
+
+                      <Accordion type="single" collapsible className="w-full">
+                        <AccordionItem value="dosage">
+                          <AccordionTrigger>Dosage</AccordionTrigger>
+                          <AccordionContent>{medicineInfo.dosage}</AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="usages">
+                          <AccordionTrigger>Uses</AccordionTrigger>
+                          <AccordionContent>
+                            <ul className="list-disc space-y-1 pl-5">
+                              {medicineInfo.usages.map((usage, index) => (
+                                <li key={index}>{usage}</li>
+                              ))}
+                            </ul>
+                          </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="sideEffects">
+                          <AccordionTrigger>Side Effects</AccordionTrigger>
+                          <AccordionContent>
+                            <ul className="list-disc space-y-1 pl-5">
+                              {medicineInfo.sideEffects.map((effect, index) => (
+                                <li key={index}>{effect}</li>
+                              ))}
+                            </ul>
+                          </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="interactions">
+                          <AccordionTrigger>Interactions</AccordionTrigger>
+                          <AccordionContent>
+                            <ul className="list-disc space-y-1 pl-5">
+                              {medicineInfo.interactions.map((interaction, index) => (
+                                <li key={index}>{interaction}</li>
+                              ))}
+                            </ul>
+                          </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="precautions">
+                          <AccordionTrigger>Precautions</AccordionTrigger>
+                          <AccordionContent>
+                            <ul className="list-disc space-y-1 pl-5">
+                              {medicineInfo.precautions.map((precaution, index) => (
+                                <li key={index}>{precaution}</li>
+                              ))}
+                            </ul>
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
+
+                      <Alert>
+                        <InfoIcon className="h-4 w-4" />
+                        <AlertTitle>Disclaimer</AlertTitle>
+                        <AlertDescription>
+                          This information is provided for educational purposes only and should not replace professional medical advice.
+                        </AlertDescription>
+                      </Alert>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <PillIcon className="mb-4 h-12 w-12 text-muted-foreground" />
+                      <p className="text-muted-foreground mb-2">No medicine scanned yet</p>
+                      <p className="text-sm text-muted-foreground">
+                        Take a photo of your medicine packaging to get detailed information
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+                {medicineInfo && !showConfirmation && (
+                  <CardFooter>
+                    <Button className="w-full" onClick={() => setShowConfirmation(true)}>
+                      Continue to Add Details
+                    </Button>
+                  </CardFooter>
                 )}
-              </CardContent>
-              {medicineInfo && !showConfirmation && (
-                <CardFooter>
-                  <Button className="w-full" onClick={() => setShowConfirmation(true)}>
-                    Continue to Add Details
-                  </Button>
-                </CardFooter>
-              )}
-            </Card>
-          )}
-        </div>
-      </Tabs>
-    </div>
+              </Card>
+            )}
+          </div>
+        </Tabs>
+      </div>
+    </PageShell>
   )
 }
 

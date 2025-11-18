@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { CalendarIcon, AlertTriangleIcon, CheckCircleIcon, XCircleIcon } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { PageShell } from "@/components/page-shell"
 
 type Medicine = {
   id: number
@@ -53,11 +54,26 @@ export default function ExpiryPage() {
 
   const getStatusBadge = (expiry_date: string) => {
     if (isExpired(expiry_date)) {
-      return <Badge variant="destructive" className="flex items-center gap-1"><XCircleIcon className="h-3 w-3" />Expired</Badge>
+      return (
+        <Badge className="flex items-center gap-1 border-red-500/30 bg-red-500/20 text-red-100">
+          <XCircleIcon className="h-3 w-3" />
+          Expired
+        </Badge>
+      )
     } else if (isExpiringSoon(expiry_date)) {
-      return <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-200 flex items-center gap-1"><AlertTriangleIcon className="h-3 w-3" />Expiring Soon</Badge>
+      return (
+        <Badge className="flex items-center gap-1 border-amber-400/30 bg-amber-400/15 text-amber-100">
+          <AlertTriangleIcon className="h-3 w-3" />
+          Expiring Soon
+        </Badge>
+      )
     } else {
-      return <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1"><CheckCircleIcon className="h-3 w-3" />Valid</Badge>
+      return (
+        <Badge className="flex items-center gap-1 border-emerald-400/30 bg-emerald-400/15 text-emerald-100">
+          <CheckCircleIcon className="h-3 w-3" />
+          Valid
+        </Badge>
+      )
     }
   }
 
@@ -81,105 +97,142 @@ export default function ExpiryPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Expiry Tracking</h1>
+    <PageShell>
+      <div className="space-y-8">
+        <div className="space-y-2">
+          <p className="text-sm uppercase tracking-[0.4em] text-emerald-200">Expiry radar</p>
+          <h1 className="text-4xl font-semibold text-white">Expiry Tracking</h1>
+          <p className="text-white/70">Categorize medicines by urgency and replace expiring doses in seconds.</p>
+        </div>
 
-      {/* Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {/* ...Card components same as before... */}
-        <Card className="bg-red-50 border-red-200">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-red-800 flex items-center gap-2">
-              <XCircleIcon className="h-5 w-5" />
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <Card className="border-red-500/20 bg-red-500/10 text-red-50">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-red-100">
+                <XCircleIcon className="h-5 w-5" />
+                Expired
+              </CardTitle>
+              <CardDescription className="text-red-100/80">Medicines past their expiry date</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-4xl font-bold">{expired.length}</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-amber-400/20 bg-amber-400/10 text-amber-50">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-amber-100">
+                <AlertTriangleIcon className="h-5 w-5" />
+                Expiring Soon
+              </CardTitle>
+              <CardDescription className="text-amber-100/80">Expiring within 90 days</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-4xl font-bold">{expiringSoon.length}</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-emerald-400/20 bg-emerald-400/10 text-emerald-50">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-emerald-100">
+                <CheckCircleIcon className="h-5 w-5" />
+                Valid
+              </CardTitle>
+              <CardDescription className="text-emerald-100/80">Healthy stock, no action needed</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-4xl font-bold">{valid.length}</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Tabs defaultValue="all">
+          <TabsList className="mb-6 bg-white/5 text-white/70">
+            <TabsTrigger value="all" className="data-[state=active]:bg-white data-[state=active]:text-slate-900">
+              All Medicines
+            </TabsTrigger>
+            <TabsTrigger value="expired" className="data-[state=active]:bg-white data-[state=active]:text-slate-900">
               Expired
-            </CardTitle>
-            <CardDescription className="text-red-700">Medicines that have passed their expiry date</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-4xl font-bold text-red-800">{expired.length}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-amber-50 border-amber-200">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-amber-800 flex items-center gap-2">
-              <AlertTriangleIcon className="h-5 w-5" />
+            </TabsTrigger>
+            <TabsTrigger value="expiring-soon" className="data-[state=active]:bg-white data-[state=active]:text-slate-900">
               Expiring Soon
-            </CardTitle>
-            <CardDescription className="text-amber-700">Medicines expiring in the next 3 months</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-4xl font-bold text-amber-800">{expiringSoon.length}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-green-50 border-green-200">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-green-800 flex items-center gap-2">
-              <CheckCircleIcon className="h-5 w-5" />
+            </TabsTrigger>
+            <TabsTrigger value="valid" className="data-[state=active]:bg-white data-[state=active]:text-slate-900">
               Valid
-            </CardTitle>
-            <CardDescription className="text-green-700">Medicines with valid expiry dates</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-4xl font-bold text-green-800">{valid.length}</p>
-          </CardContent>
-        </Card>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="all">
+            <ExpiryTable
+              medicines={medicines}
+              getStatusBadge={getStatusBadge}
+              loading={loading}
+              onReplaceClick={setSelectedMed}
+              openDialog={setOpenDialog}
+            />
+          </TabsContent>
+          <TabsContent value="expired">
+            <ExpiryTable
+              medicines={expired}
+              getStatusBadge={getStatusBadge}
+              loading={loading}
+              emptyMessage="No expired medicines found."
+              onReplaceClick={setSelectedMed}
+              openDialog={setOpenDialog}
+            />
+          </TabsContent>
+          <TabsContent value="expiring-soon">
+            <ExpiryTable
+              medicines={expiringSoon}
+              getStatusBadge={getStatusBadge}
+              loading={loading}
+              emptyMessage="No medicines expiring soon."
+              onReplaceClick={setSelectedMed}
+              openDialog={setOpenDialog}
+            />
+          </TabsContent>
+          <TabsContent value="valid">
+            <ExpiryTable
+              medicines={valid}
+              getStatusBadge={getStatusBadge}
+              loading={loading}
+              emptyMessage="No valid medicines found."
+              onReplaceClick={setSelectedMed}
+              openDialog={setOpenDialog}
+            />
+          </TabsContent>
+        </Tabs>
+
+        <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+          <DialogContent className="glass-panel border-white/10 bg-slate-950/80">
+            <DialogHeader>
+              <DialogTitle className="text-white">Replace Medicine</DialogTitle>
+            </DialogHeader>
+            {selectedMed && (
+              <div className="mt-4 space-y-4">
+                <Input
+                  value={selectedMed.name || ""}
+                  onChange={(e) => setSelectedMed({ ...selectedMed, name: e.target.value })}
+                  placeholder="Medicine name"
+                />
+                <Input
+                  type="date"
+                  value={selectedMed.expiry_date || ""}
+                  onChange={(e) => setSelectedMed({ ...selectedMed, expiry_date: e.target.value })}
+                />
+                <Input
+                  type="number"
+                  value={selectedMed.quantity ?? ""}
+                  onChange={(e) => setSelectedMed({ ...selectedMed, quantity: parseInt(e.target.value) || 0 })}
+                  placeholder="Quantity"
+                />
+                <Button onClick={handleUpdate}>Update</Button>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
-
-      {/* Tabs */}
-      <Tabs defaultValue="all">
-        <TabsList className="mb-6">
-          <TabsTrigger value="all">All Medicines</TabsTrigger>
-          <TabsTrigger value="expired">Expired</TabsTrigger>
-          <TabsTrigger value="expiring-soon">Expiring Soon</TabsTrigger>
-          <TabsTrigger value="valid">Valid</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="all">
-          <ExpiryTable medicines={medicines} getStatusBadge={getStatusBadge} loading={loading} onReplaceClick={setSelectedMed} openDialog={setOpenDialog} />
-        </TabsContent>
-        <TabsContent value="expired">
-          <ExpiryTable medicines={expired} getStatusBadge={getStatusBadge} loading={loading} emptyMessage="No expired medicines found." onReplaceClick={setSelectedMed} openDialog={setOpenDialog} />
-        </TabsContent>
-        <TabsContent value="expiring-soon">
-          <ExpiryTable medicines={expiringSoon} getStatusBadge={getStatusBadge} loading={loading} emptyMessage="No medicines expiring soon." onReplaceClick={setSelectedMed} openDialog={setOpenDialog} />
-        </TabsContent>
-        <TabsContent value="valid">
-          <ExpiryTable medicines={valid} getStatusBadge={getStatusBadge} loading={loading} emptyMessage="No valid medicines found." onReplaceClick={setSelectedMed} openDialog={setOpenDialog} />
-        </TabsContent>
-      </Tabs>
-
-      {/* Replace Modal */}
-      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Replace Medicine</DialogTitle>
-          </DialogHeader>
-          {selectedMed && (
-            <div className="space-y-4 mt-4">
-              <Input
-                value={selectedMed.name || ""}
-                onChange={(e) => setSelectedMed({ ...selectedMed, name: e.target.value })}
-                placeholder="Medicine name"
-              />
-              <Input
-                type="date"
-                value={selectedMed.expiry_date || ""}
-                onChange={(e) => setSelectedMed({ ...selectedMed, expiry_date: e.target.value })}
-              />
-              <Input
-                type="number"
-                value={selectedMed.quantity ?? ""}
-                onChange={(e) => setSelectedMed({ ...selectedMed, quantity: parseInt(e.target.value) || 0 })}
-                placeholder="Quantity"
-              />
-              <Button onClick={handleUpdate}>Update</Button>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
+    </PageShell>
   )
 }
 
